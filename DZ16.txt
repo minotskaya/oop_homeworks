@@ -1,0 +1,71 @@
+sqlite> .mode column
+sqlite> .headers on
+sqlite> CREATE TABLE books(
+   ...> id INT PRIMARY KEY NOT NULL,
+   ...> author TEXT,
+   ...> title TEXT,
+   ...> publish_year INT CHECK(publish_year >= 1564)
+   ...> );
+sqlite> INSERT INTO books
+   ...> VALUES
+   ...> (1, 'Ф.М.Достоевский', 'Преступление и наказание', 1866),
+   ...> (2, 'Е.И.Замятин', 'Мы', 1924),
+   ...> (3, 'B.Alberts', 'Molecular Biology of the Cell', 2015),
+   ...> (4, 'А.М.Тер-Крикоров', 'Курс математического анализа', 2009),
+   ...> (5, 'А.С.Пушкин', 'Капитанская дочка', 1836);
+sqlite> CREATE TABLE readers(
+   ...> id INT PRIMARY KEY NOT NULL,
+   ...> name TEXT);
+sqlite> INSERT INTO readers
+   ...> VALUES
+   ...> (1, 'Иван'),
+   ...> (2, 'Катя'),
+   ...> (3, 'Лиза'),
+   ...> (4, 'Даниил'),
+   ...> (5, 'Алексей');
+sqlite> CREATE TABLE records(
+   ...> reader_id INT NOT NULL,
+   ...> book_id INT NOT NULL,
+   ...> taking_date TEXT,
+   ...> returning_date TEXT,
+   ...> FOREIGN KEY(reader_id) REFERENCES readers (id)
+   ...> FOREIGN KEY(book_id) REFERENCES book (id)
+   ...> );
+sqlite> INSERT INTO records
+   ...> VALUES
+   ...> (2, 4, '2020-02-15', '2020-03-01'),
+   ...> (4, 3, '2020-03-11', '2020-03-18');
+   ...> (5, 1, '2020-03-07', '2020-03-20'),
+   ...> (1, 2, '2020-03-02', '2020-03-17'),
+   ...> (3, 5, '2020-03-13', '2020-03-23');
+sqlite> SELECT DISTINCT book_id, title
+   ...> FROM records
+   ...> JOIN books ON records.book_id = books.id
+   ...> WHERE records.returning_date > date('now');
+book_id     title
+----------  -----------------------------
+3           Molecular Biology of the Cell
+1           Преступление и наказание
+5           Капитанская дочка
+sqlite> SELECT name, title
+   ...> FROM records
+   ...> JOIN readers ON records.reader_id = readers.id
+   ...> JOIN books ON records.book_id = books.id
+   ...> ;
+name        title
+----------  ----------------------------
+Катя        Курс математического анализа
+Даниил      Molecular Biology of the Cell
+Алексей     Преступление и наказание
+Иван        Мы
+Лиза        Капитанская дочка
+sqlite> SELECT author, COUNT(id)
+   ...> FROM books
+   ...> GROUP BY author;
+author      COUNT(id)
+----------  ----------
+B.Alberts   1
+А.М.Тер-Кр  1
+А.С.Пушкин  1
+Е.И.Замяти  1
+Ф.М.Достое  1
